@@ -8,6 +8,23 @@ if (!isset($_SESSION["user_id"])) {
 }
 
 $user_id = $_SESSION["user_id"];
+
+// Handle File Deletion
+if (isset($_POST["delete_file"])) {
+    $file_id = $_POST["file_id"];
+    $query = "SELECT * FROM uploaded_files WHERE id = $file_id AND user_id = $user_id";
+    $result = mysqli_query($conn, $query);
+    $file = mysqli_fetch_assoc($result);
+
+    if ($file) {
+        unlink($file["file_path"]); // Delete file from server
+        $deleteQuery = "DELETE FROM uploaded_files WHERE id = $file_id";
+        mysqli_query($conn, $deleteQuery);
+    }
+
+    header("Location: index.php");
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,7 +39,6 @@ $user_id = $_SESSION["user_id"];
             box-sizing: border-box;
             font-family: 'Arial', sans-serif;
         }
-
         body {
             background-color: #f4f7fc;
             display: flex;
@@ -31,7 +47,6 @@ $user_id = $_SESSION["user_id"];
             min-height: 100vh;
             padding: 20px;
         }
-
         .container {
             width: 100%;
             max-width: 800px;
@@ -40,7 +55,6 @@ $user_id = $_SESSION["user_id"];
             border-radius: 10px;
             box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
         }
-
         .navbar {
             background: #007bff;
             padding: 10px 15px;
@@ -50,19 +64,15 @@ $user_id = $_SESSION["user_id"];
             align-items: center;
             color: #fff;
         }
-
         .navbar a {
             color: #fff;
             text-decoration: none;
-            font-size: 16px;
         }
-
         h1 {
             text-align: center;
             color: #333;
             margin-bottom: 20px;
         }
-
         .card {
             background: #fff;
             padding: 15px;
@@ -70,83 +80,54 @@ $user_id = $_SESSION["user_id"];
             border-radius: 8px;
             box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
         }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            text-align: center;
-            cursor: pointer;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-
-        .btn-primary {
-            background: #007bff;
-            color: #fff;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: #fff;
-        }
-
-        .btn:hover {
-            opacity: 0.8;
-        }
-
-        input[type="file"] {
+        input[type="file"], input[type="text"], select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             margin-top: 5px;
         }
-
-        .table-container {
-            overflow-x: auto;
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
         }
-
         table, th, td {
             border: 1px solid #ddd;
         }
-
         th, td {
             padding: 12px;
             text-align: left;
         }
-
         th {
             background-color: #007bff;
             color: #fff;
         }
-
         tr:hover {
             background-color: #f1f1f1;
         }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 15px;
-            }
-
-            .btn {
-                width: 100%;
-                display: block;
-                margin-top: 10px;
-            }
-
-            th, td {
-                font-size: 14px;
-            }
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: #fff;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: #fff;
+        }
+        .file-details {
+            display: none;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f9f9f9;
         }
     </style>
 </head>
@@ -169,29 +150,99 @@ $user_id = $_SESSION["user_id"];
 
         <div class="card">
             <h2>Your Uploaded Files</h2>
-            <div class="table-container">
-                <table>
+            <table>
+                <tr>
+                    <th>File Name</th>
+                    <th>Uploaded At</th>
+                    <th>Actions</th>
+                </tr>
+
+                <?php
+                $query = "SELECT * FROM uploaded_files WHERE user_id = $user_id ORDER BY uploaded_at DESC";
+                $result = mysqli_query($conn, $query);
+
+                while ($row = mysqli_fetch_assoc($result)) {
+                    echo "<tr>
+                            <td><a href='#' class='file-link' data-file='{$row['file_path']}'>{$row['file_name']}</a></td>
+                            <td>{$row['uploaded_at']}</td>
+                            <td>
+                                <a href='{$row['file_path']}' download class='btn btn-primary'>Download</a>
+                                <form method='post' style='display:inline;'>
+                                    <input type='hidden' name='file_id' value='{$row['id']}'>
+                                    <button type='submit' name='delete_file' class='btn btn-danger'>Delete</button>
+                                </form>
+                            </td>
+                          </tr>";
+                }
+                ?>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Search & Filter</h2>
+            <input type="text" id="searchInput" placeholder="Search...">
+            <select id="filterColumn">
+                <option value="0">Name</option>
+                <option value="1">Email</option>
+                <option value="2">ID</option>
+                <option value="3">Password</option>
+            </select>
+        </div>
+
+        <div class="card file-details" id="fileDetails">
+            <h2>File Details</h2>
+            <table id="fileTable">
+                <thead>
                     <tr>
-                        <th>File Name</th>
-                        <th>Uploaded At</th>
-                        <th>Download</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>ID</th>
+                        <th>Password</th>
                     </tr>
-
-                    <?php
-                    $query = "SELECT * FROM uploaded_files WHERE user_id = $user_id ORDER BY uploaded_at DESC";
-                    $result = mysqli_query($conn, $query);
-
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        echo "<tr>
-                                <td>{$row['file_name']}</td>
-                                <td>{$row['uploaded_at']}</td>
-                                <td><a href='{$row['file_path']}' download class='btn btn-primary'>Download</a></td>
-                              </tr>";
-                    }
-                    ?>
-                </table>
-            </div>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".file-link").forEach(link => {
+                link.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    const filePath = this.getAttribute("data-file");
+
+                    fetch(filePath)
+                        .then(response => response.text())
+                        .then(data => {
+                            const lines = data.split("\n").slice(1);
+                            const tableBody = document.querySelector("#fileTable tbody");
+                            tableBody.innerHTML = "";
+
+                            lines.forEach(line => {
+                                if (line.trim() === "") return;
+                                const [name, email, id, password] = line.split(",");
+                                const row = `<tr>
+                                    <td>${name}</td>
+                                    <td>${email}</td>
+                                    <td>${id}</td>
+                                    <td>${password}</td>
+                                </tr>`;
+                                tableBody.innerHTML += row;
+                            });
+
+                            document.getElementById("fileDetails").style.display = "block";
+                        });
+                });
+            });
+
+            document.getElementById("searchInput").addEventListener("input", function () {
+                const value = this.value.toLowerCase();
+                document.querySelectorAll("#fileTable tbody tr").forEach(row => {
+                    row.style.display = row.children[document.getElementById("filterColumn").value].textContent.toLowerCase().includes(value) ? "" : "none";
+                });
+            });
+        });
+    </script>
 </body>
 </html>
