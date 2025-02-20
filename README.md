@@ -1,16 +1,14 @@
-User Authentication and File Upload System
+PHP User Authentication & File Upload System
 
-This project is a user authentication and file upload system built using PHP and MySQL. It includes user registration, login, session management, CSV/Excel file upload, and data display.
+This is a simple user authentication system with CSV/Excel file upload functionality built using PHP and MySQL. It includes user registration, login, session management, and a dashboard for file uploads.
 
 Features
 
-User Registration and Login System
+User Registration & Login
 
-Secure Password Hashing
+Password Hashing for Security
 
-Session Management
-
-CSV/Excel File Upload and Import
+CSV/Excel File Upload & Import
 
 Display Imported Data in a Table
 
@@ -18,78 +16,80 @@ Logout Functionality
 
 Prerequisites
 
-Ensure you have the following installed:
+Make sure you have the following installed on your system:
 
-XAMPP (for Apache, MySQL, and PHP)
+XAMPP (or any other local server with PHP & MySQL)
 
-PHP (version 7.4 or later)
+PHP 7 or higher
 
 MySQL Database
 
-Git (for version control)
+Composer (optional for dependency management)
 
-Installation and Setup
+Setup Instructions
 
-Step 1: Clone the Repository
+1. Clone the Repository
 
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
+git clone https://github.com/your-username/your-repository.git
+cd your-repository
 
-Step 2: Setup XAMPP
+2. Start XAMPP
 
-Start Apache and MySQL in the XAMPP Control Panel.
+Open XAMPP Control Panel and start Apache and MySQL.
 
-Open phpMyAdmin by visiting: http://localhost/phpmyadmin
+3. Create a Database
+
+Open phpMyAdmin (http://localhost/phpmyadmin)
 
 Create a new database named user_system.
 
-Import the provided database.sql file to create the necessary tables.
+Import the database.sql file (if available) to set up the tables.
 
-Step 3: Configure Database
+4. Configure Database Connection
 
-Open database.php.
+Edit the database.php file and update the database credentials:
 
-Update the database credentials:
-
-$host = "localhost";
-$user = "root";
-$password = ""; // Leave blank for default XAMPP setup
+$servername = "localhost";
+$username = "root";
+$password = "";
 $database = "user_system";
-$conn = mysqli_connect($host, $user, $password, $database);
+$conn = new mysqli($servername, $username, $password, $database);
 
-Step 4: Run the Project
+5. Run the Application
 
-Move the project folder to the XAMPP htdocs directory.
+Move the project folder to htdocs (C:\xampp\htdocs\your-repository).
 
-Open a browser and visit:
+Open the browser and visit http://localhost/your-repository/.
 
-http://localhost/your-repo/login.php
+6. Register & Login
 
-Register a new user and log in.
+Register a new user via registration.php.
 
-Upload a CSV/Excel file and check the imported data.
+Log in using the credentials to access the dashboard.
 
-Step 5: Push to GitHub (if needed)
+File Structure
 
-git add .
-git commit -m "Initial commit"
-git push origin main
+/
+├── database.php  # Database Connection File
+├── index.php     # User Dashboard
+├── login.php     # Login Page
+├── registration.php  # Registration Page
+├── upload.php    # File Upload Script
+├── logout.php    # Logout Script
+├── style.css     # Stylesheet
+└── README.md     # Documentation
 
 Usage
 
-Register or login using your credentials.
+Upload a CSV/Excel file via the dashboard.
 
-Upload CSV/Excel files.
+View imported data in a tabular format.
 
-View imported data in a table.
-
-Logout when finished.
+Logout anytime to end the session.
 
 License
 
-This project is open-source and available under the MIT License.
+This project is open-source and free to use under the MIT License.
 
-Contact
-
-For any queries, contact vineet somani.
+Made with ❤️ by [Your Name]
 
