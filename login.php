@@ -16,28 +16,33 @@ if (isset($_SESSION["user"])) {
 </head>
 <body>
     <div class="container">
-        <?php
-        if (isset($_POST["login"])) {
-           $email = $_POST["email"];
-           $password = $_POST["password"];
-            require_once "database.php";
-            $sql = "SELECT * FROM users WHERE email = '$email'";
-            $result = mysqli_query($conn, $sql);
-            $user = mysqli_fetch_array($result, MYSQLI_ASSOC);
-            if ($user) {
-                if (password_verify($password, $user["password"])) {
-                    session_start();
-                    $_SESSION["user"] = "yes";
-                    header("Location: index.php");
-                    die();
-                }else{
-                    echo "<div class='alert alert-danger'>Password does not match</div>";
-                }
-            }else{
-                echo "<div class='alert alert-danger'>Email does not match</div>";
-            }
+    <?php
+// session_start();
+require_once "database.php";
+
+if (isset($_POST["login"])) {
+    $email = $_POST["email"];
+    $password = $_POST["password"];
+
+    $sql = "SELECT * FROM users WHERE email = '$email'";
+    $result = mysqli_query($conn, $sql);
+    $user = mysqli_fetch_array($result, MYSQLI_ASSOC);
+
+    if ($user) {
+        if (password_verify($password, $user["password"])) {
+            $_SESSION["user_id"] = $user["id"];
+            $_SESSION["user_name"] = $user["name"];
+            header("Location: index.php");
+            exit();
+        } else {
+            echo "<div class='alert alert-danger'>Incorrect password.</div>";
         }
-        ?>
+    } else {
+        echo "<div class='alert alert-danger'>No account found with this email.</div>";
+    }
+}
+?>
+
       <form action="login.php" method="post">
         <div class="form-group">
             <input type="email" placeholder="Enter Email:" name="email" class="form-control">

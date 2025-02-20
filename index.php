@@ -1,9 +1,13 @@
 <?php
 session_start();
-if (!isset($_SESSION["user"])) {
-   header("Location: login.php");
-}
 require_once "database.php";
+
+if (!isset($_SESSION["user_id"])) {
+    header("Location: login.php");
+    exit();
+}
+
+$user_id = $_SESSION["user_id"];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -16,11 +20,11 @@ require_once "database.php";
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
         }
-        
+
         body {
-            background-color: #f8f9fa;
+            background-color: #f4f7fc;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -30,11 +34,27 @@ require_once "database.php";
 
         .container {
             width: 100%;
-            max-width: 900px;
+            max-width: 800px;
             background: #fff;
-            padding: 20px;
+            padding: 25px;
             border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar {
+            background: #007bff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #fff;
+        }
+
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 16px;
         }
 
         h1 {
@@ -49,42 +69,6 @@ require_once "database.php";
             margin-bottom: 20px;
             border-radius: 8px;
             box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-header {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #444;
-        }
-
-        .alert {
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-
-        .alert-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-top: 5px;
         }
 
         .btn {
@@ -104,13 +88,21 @@ require_once "database.php";
             color: #fff;
         }
 
-        .btn-warning {
-            background: #ff9800;
+        .btn-danger {
+            background: #dc3545;
             color: #fff;
         }
 
         .btn:hover {
             opacity: 0.8;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 5px;
         }
 
         .table-container {
@@ -120,7 +112,7 @@ require_once "database.php";
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 15px;
         }
 
         table, th, td {
@@ -128,7 +120,7 @@ require_once "database.php";
         }
 
         th, td {
-            padding: 10px;
+            padding: 12px;
             text-align: left;
         }
 
@@ -137,7 +129,10 @@ require_once "database.php";
             color: #fff;
         }
 
-        /* Responsive Design */
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 15px;
@@ -157,65 +152,46 @@ require_once "database.php";
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to Dashboard</h1>
-        
-        <div class="card">
-            <div class="card-header">Upload CSV or Excel File</div>
-            <div class="card-body">
-                <?php
-                if(isset($_SESSION['message'])) {
-                    echo '<div class="alert alert-'.$_SESSION['message_type'].'">'.$_SESSION['message'].'</div>';
-                    unset($_SESSION['message']);
-                    unset($_SESSION['message_type']);
-                }
-                ?>
-                
-                <form action="upload.php" method="post" enctype="multipart/form-data">
-                    <label for="file">Select File (CSV or Excel)</label>
-                    <input type="file" name="file" id="file" required>
-                    <p class="form-text">Only .csv and .xlsx files are allowed.</p>
-                    <button type="submit" name="import" class="btn btn-primary">Upload and Import</button>
-                </form>
-            </div>
+        <div class="navbar">
+            <span>Dashboard</span>
+            <a href="logout.php" class="btn btn-danger">Logout</a>
         </div>
-        
-        <div class="card">
-            <div class="card-header">Imported Data</div>
-            <div class="card-body table-container">
-                <?php
-                $check_table = mysqli_query($conn, "SHOW TABLES LIKE 'imported_data'");
-                if (mysqli_num_rows($check_table) > 0) {
-                    $result = mysqli_query($conn, "SELECT * FROM imported_data");
 
-                    if (mysqli_num_rows($result) > 0) {
-                        echo '<table>';
-                        echo '<thead><tr>';
-                        $field_info = mysqli_fetch_fields($result);
-                        foreach ($field_info as $field) {
-                            echo '<th>' . htmlspecialchars($field->name) . '</th>';
-                        }
-                        echo '</tr></thead>';
-                        echo '<tbody>';
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            echo '<tr>';
-                            foreach ($row as $value) {
-                                echo '<td>' . htmlspecialchars($value) . '</td>';
-                            }
-                            echo '</tr>';
-                        }
-                        echo '</tbody>';
-                        echo '</table>';
-                    } else {
-                        echo '<div class="alert alert-info">No data has been imported yet.</div>';
+        <h1>Welcome, <?php echo htmlspecialchars($_SESSION["user_name"]); ?></h1>
+
+        <div class="card">
+            <h2>Upload CSV</h2>
+            <form action="upload.php" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <button type="submit" name="import" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Your Uploaded Files</h2>
+            <div class="table-container">
+                <table>
+                    <tr>
+                        <th>File Name</th>
+                        <th>Uploaded At</th>
+                        <th>Download</th>
+                    </tr>
+
+                    <?php
+                    $query = "SELECT * FROM uploaded_files WHERE user_id = $user_id ORDER BY uploaded_at DESC";
+                    $result = mysqli_query($conn, $query);
+
+                    while ($row = mysqli_fetch_assoc($result)) {
+                        echo "<tr>
+                                <td>{$row['file_name']}</td>
+                                <td>{$row['uploaded_at']}</td>
+                                <td><a href='{$row['file_path']}' download class='btn btn-primary'>Download</a></td>
+                              </tr>";
                     }
-                } else {
-                    echo '<div class="alert alert-info">No data has been imported yet.</div>';
-                }
-                ?>
+                    ?>
+                </table>
             </div>
         </div>
-        
-        <a href="logout.php" class="btn btn-warning">Logout</a>
     </div>
 </body>
 </html>

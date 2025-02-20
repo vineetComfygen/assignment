@@ -1,12 +1,14 @@
+
+
 <?php
 $hostname = "localhost";
 $dbuser = "root";
 $dbPassword = "";
-$dbName = "assigment";
+$dbName = "assigmentnew";
 
 $conn = mysqli_connect($hostname, $dbuser, $dbPassword, $dbName);
 
 if (!$conn) {
-    die("Something went wrong");
+    die("Database connection failed: " . mysqli_connect_error());
 }
 ?>
